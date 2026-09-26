@@ -43,7 +43,6 @@ use soroban_sdk::Bytes;
 
 /// Triggers a lint warning because `push_back` is repeatedly called inside a loop construct,
 /// leading to heavy host interaction overhead, frequent heap reallocations, and unnecessary memory churn.
-/// leading to heavy host interaction overhead, frequent heap reallocations, and unnecessary memory churn.
 ///
 /// Each invocation crosses the host boundary, accumulating significant transaction fees.
 /// Demonstrates inefficient `Bytes` container mutation (`push_back`) within a `for` loop.
