@@ -14,6 +14,9 @@ use soroban_sdk::Bytes;
 
 /// Demonstrates an inefficient bytes concatenation pattern inside a loop
 /// which triggers the `soroban_inefficient_bytes_concat` lint warning.
+///
+/// Repeatedly appending elements via `push_back` or similar methods inside a loop
+/// leads to high CPU instructions and memory reallocation overhead in Soroban.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
