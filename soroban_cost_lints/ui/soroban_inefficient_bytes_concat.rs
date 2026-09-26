@@ -42,4 +42,5 @@ fn good_small_push_back(mut b: Bytes) {
     }
 }
 
+/// Entry point executing the test cases to verify lint emission and suppression.
 fn main() {}
