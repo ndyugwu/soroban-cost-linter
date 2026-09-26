@@ -17,7 +17,10 @@ use soroban_sdk::Bytes;
 ///
 /// Repeatedly appending elements via `push_back` or similar methods inside a loop
 /// leads to high CPU instructions and memory reallocation overhead in Soroban.
-/// Each `push_back` crosses the host boundary, driving up CPU metering.
+/// Each `push_back` crosses the host boundary, driving up CPU metering and network fees.
+///
+/// To avoid this high cost overhead, accumulation should instead be performed in a native
+/// `Vec<u8>` first, and then converted to `Bytes` once outside the loop via `Bytes::from_slice`.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
@@ -26,12 +29,12 @@ fn bad_push_back(mut b: Bytes) {
 
 /// Demonstrates a small, bounded loop containing `push_back` operations.
 /// This function is marked with `#[allow(soroban_inefficient_bytes_concat)]`
-/// to suppress the warning since the loop count is small and provably bounded.
-/// Alternatively, accumulation should be performed in a native Vec<u8> first.
+/// to suppress the warning since the loop count is small and provably bounded,
+/// meaning the host call overhead is negligible in practice.
 #[allow(soroban_inefficient_bytes_concat)]
 fn good_small_push_back(mut b: Bytes) {
-    // False positive or deliberate small iteration: loop is small and provably bounded,
-    // so cost is negligible, but lint flags it anyway unless allowed.
+    // Deliberate small iteration: loop bound is extremely small (0..2),
+    // so cost overhead is negligible and safely suppressed.
     for _ in 0..2 {
         b.push_back(1);
     }
