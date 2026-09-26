@@ -23,6 +23,17 @@ use soroban_sdk::Bytes;
 /// To avoid this high cost overhead, accumulation of elements should instead be performed in a native
 /// Rust `Vec<u8>` first, and then converted to Soroban `Bytes` once outside the loop via
 /// `Bytes::from_slice(&env, &vec)` or equivalent batch construction.
+/// Demonstrates an inefficient bytes concatenation pattern inside a loop
+/// which triggers the `soroban_inefficient_bytes_concat` lint warning.
+///
+/// Repeatedly appending elements via `push_back` or similar growth methods inside a loop
+/// leads to exceptionally high CPU instructions and memory reallocation overhead in Soroban.
+/// Each individual `push_back` crosses the host VM-to-host boundary, driving up CPU metering
+/// instructions and network resource fees unnecessarily.
+///
+/// To avoid this high cost overhead, accumulation of elements should instead be performed in a native
+/// Rust `Vec<u8>` first, and then converted to Soroban `Bytes` once outside the loop via
+/// `Bytes::from_slice(&env, &vec)` or equivalent batch construction.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
