@@ -15,12 +15,14 @@ use soroban_sdk::Bytes;
 /// Demonstrates an inefficient bytes concatenation pattern inside a loop
 /// which triggers the `soroban_inefficient_bytes_concat` lint warning.
 ///
-/// Repeatedly appending elements via `push_back` or similar methods inside a loop
-/// leads to high CPU instructions and memory reallocation overhead in Soroban.
-/// Each `push_back` crosses the host boundary, driving up CPU metering and network fees.
+/// Repeatedly appending elements via `push_back` or similar growth methods inside a loop
+/// leads to exceptionally high CPU instructions and memory reallocation overhead in Soroban.
+/// Each individual `push_back` crosses the host VM-to-host boundary, driving up CPU metering
+/// instructions and network resource fees unnecessarily.
 ///
-/// To avoid this high cost overhead, accumulation should instead be performed in a native
-/// `Vec<u8>` first, and then converted to `Bytes` once outside the loop via `Bytes::from_slice`.
+/// To avoid this high cost overhead, accumulation of elements should instead be performed in a native
+/// Rust `Vec<u8>` first, and then converted to Soroban `Bytes` once outside the loop via
+/// `Bytes::from_slice(&env, &vec)` or equivalent batch construction.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
@@ -28,9 +30,9 @@ fn bad_push_back(mut b: Bytes) {
 }
 
 /// Demonstrates a small, bounded loop containing `push_back` operations.
-/// This function is marked with `#[allow(soroban_inefficient_bytes_concat)]`
-/// to suppress the warning since the loop count is small and provably bounded,
-/// meaning the host call overhead is negligible in practice.
+/// This function is explicitly marked with the `#[allow(soroban_inefficient_bytes_concat)]`
+/// attribute to suppress the warning since the loop bound is tiny, static, and provably bounded,
+/// meaning the accumulated host call overhead is negligible in practice and safely bypassed.
 #[allow(soroban_inefficient_bytes_concat)]
 fn good_small_push_back(mut b: Bytes) {
     // Deliberate small iteration: loop bound is extremely small (0..2),
