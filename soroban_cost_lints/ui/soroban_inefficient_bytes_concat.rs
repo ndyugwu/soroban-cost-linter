@@ -28,8 +28,6 @@ pub mod soroban_sdk {
 
 use soroban_sdk::Bytes;
 
-/// Triggers a lint warning because `push_back` is repeatedly called inside a loop,
-/// causing inefficient incremental heap reallocations and host-managed memory churn.
 /// Triggers a lint warning because `push_back` is repeatedly called inside an unbounded or large loop,
 /// leading to heavy host interaction overhead, frequent heap reallocations, and unnecessary memory churn.
 fn bad_push_back(mut b: Bytes) {
