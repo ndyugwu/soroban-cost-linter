@@ -41,10 +41,12 @@ use soroban_sdk::Bytes;
 /// Developers should accumulate bytes in local heap-allocated Rust buffers (`Vec<u8>`) during iteration
 /// and perform a single conversion via `Bytes::from_slice` once outside the loop scope.
 
-/// Triggers a lint warning because `push_back` is repeatedly called inside an unbounded or large loop,
+/// Triggers a lint warning because `push_back` is repeatedly called inside a loop construct,
+/// leading to heavy host interaction overhead, frequent heap reallocations, and unnecessary memory churn.
 /// leading to heavy host interaction overhead, frequent heap reallocations, and unnecessary memory churn.
 ///
 /// Each invocation crosses the host boundary, accumulating significant transaction fees.
+/// Demonstrates inefficient `Bytes` container mutation (`push_back`) within a `for` loop.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
