@@ -1,13 +1,16 @@
 //! # UI Test: `soroban_inefficient_bytes_concat`
 //!
-//! This UI test verifies that the `soroban_inefficient_bytes_concat` lint (and its underlying
-//! `bytes_append_in_loop` diagnostic) correctly triggers when `Bytes` container mutation methods
-//! like `push_back` or `append` are invoked repeatedly inside unbounded or large loops.
+//! This UI test thoroughly verifies that the `soroban_inefficient_bytes_concat` lint
+//! correctly triggers when `Bytes` container mutation methods such as `push_back` or
+//! `append` are invoked repeatedly inside unbounded or large loop constructs.
 //!
-//! ## Contributor Notes
-//! - The mock `soroban_sdk` module simulates the minimal Soroban SDK types necessary for compilation
-//!   during standalone UI test runs without requiring the full heavy SDK dependency tree.
-//! - Expected lint diagnostics are asserted using compiler comment directives (e.g. `//~ WARNING`).
+//! ## Contributor & Maintainer Notes
+//! - The mock `soroban_sdk` module simulates the minimal Soroban SDK `Bytes` container handle
+//!   necessary for compilation during standalone UI test runs without requiring the full heavy
+//!   Soroban SDK dependency tree.
+//! - Expected lint diagnostics are explicitly asserted using compiler comment directives
+//!   (e.g., `//~ WARNING inefficient Bytes concatenation inside a loop`).
+//! - Ensure that any modifications to the lint diagnostic messages are mirrored accurately here.
 
 #![warn(soroban_inefficient_bytes_concat)]
 
