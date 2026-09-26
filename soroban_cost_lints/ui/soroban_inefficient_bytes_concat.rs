@@ -28,6 +28,13 @@ pub mod soroban_sdk {
 
 use soroban_sdk::Bytes;
 
+/// # Inefficient Bytes Concatenation Analysis
+///
+/// This module contains test scenarios demonstrating how `Bytes` container mutations
+/// like `push_back` and `append` inside loops generate excessive host calls and memory overhead.
+/// Developers should accumulate bytes in local Rust buffers (`Vec<u8>`) instead and perform
+/// a single conversion once outside the loop.
+
 /// Triggers a lint warning because `push_back` is repeatedly called inside an unbounded or large loop,
 /// leading to heavy host interaction overhead, frequent heap reallocations, and unnecessary memory churn.
 fn bad_push_back(mut b: Bytes) {
