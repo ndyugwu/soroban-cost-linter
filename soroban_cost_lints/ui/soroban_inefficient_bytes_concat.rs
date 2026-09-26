@@ -11,6 +11,7 @@
 //! - Expected lint diagnostics are explicitly asserted using compiler comment directives
 //!   (e.g., `//~ WARNING inefficient Bytes concatenation inside a loop`).
 //! - Ensure that any modifications to the lint diagnostic messages are mirrored accurately here.
+//! - Developers should ensure all byte accumulation is done off-host via `Vec<u8>` where possible.
 
 #![warn(soroban_inefficient_bytes_concat)]
 
@@ -46,6 +47,9 @@ use soroban_sdk::Bytes;
 ///
 /// Each invocation crosses the host boundary, accumulating significant transaction fees.
 /// Demonstrates inefficient `Bytes` container mutation (`push_back`) within a `for` loop.
+///
+/// # Performance Note
+/// Avoid this pattern in Soroban smart contracts; use `Vec<u8>` locally instead.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
