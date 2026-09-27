@@ -20,7 +20,7 @@ jobs:
   # findings. It stays on every PR because it is cheap.
   dogfood-smoke:
     name: Dogfood action (zero-findings fixture)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - name: Run composite action against test fixtures
@@ -35,7 +35,7 @@ jobs:
   # them by hand.
   discover-corpus:
     name: Discover corpus contracts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     outputs:
       contracts: ${{ steps.list.outputs.contracts }}
@@ -63,7 +63,7 @@ jobs:
   # second hand-kept list.
   dogfood-corpus:
     name: Dogfood action (corpus contract ${{ matrix.contract }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: discover-corpus
     strategy:
