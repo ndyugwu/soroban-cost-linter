@@ -1,10 +1,10 @@
-/// UI test fixture for `soroban_inefficient_bytes_concat`.
+/// Comprehensive UI test fixture for the `soroban_inefficient_bytes_concat` lint.
 ///
-/// This module verifies that the `soroban_inefficient_bytes_concat` lint properly
+/// This test file verifies that the `soroban_inefficient_bytes_concat` lint correctly
 /// identifies inefficient `.push_back()` and `.append()` operations performed on
 /// Soroban `Bytes` containers within loop structures (`for`, `while`, `loop`).
 /// It ensures that developers are warned about excessive host boundary crossings
-/// and guided toward efficient Rust-native memory accumulation (`Vec<u8>`).
+/// and guides developers toward efficient Rust-native memory accumulation using `Vec<u8>` before a single conversion via `Bytes::from_slice`.
 ///
 /// # What it does
 /// Detects Bytes concatenation operations (`push_back` and `append`) that are
