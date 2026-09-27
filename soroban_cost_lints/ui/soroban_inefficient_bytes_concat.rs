@@ -18,8 +18,6 @@ use soroban_sdk::Bytes;
 
 /// Demonstrates an inefficient bytes concatenation pattern inside a loop.
 /// This function triggers the `soroban_inefficient_bytes_concat` lint warning.
-/// Demonstrates an inefficient bytes concatenation pattern inside a loop.
-/// This function triggers the `soroban_inefficient_bytes_concat` lint warning.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
@@ -27,8 +25,6 @@ fn bad_push_back(mut b: Bytes) {
 }
 
 #[allow(soroban_inefficient_bytes_concat)]
-/// Demonstrates a bounded loop with small iterations where the lint is allowed.
-@[allow(soroban_inefficient_bytes_concat)]
 /// Demonstrates a bounded loop with small iterations where the lint is allowed.
 fn good_small_push_back(mut b: Bytes) {
     // False positive: loop is small and provably bounded, so cost is negligible,
