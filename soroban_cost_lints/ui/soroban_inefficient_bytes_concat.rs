@@ -44,12 +44,9 @@ use soroban_sdk::Bytes;
 /// each call crosses the host boundary and inflates gas/CPU fees unnecessarily.
 ///
 /// # Detailed Analysis
-/// unconstrained or sufficiently large loop triggers a warning because it
-/// leads to quadratic memory reallocations and excessive memory metering costs.
-///
-/// # Detailed Analysis
-/// When `push_back` is called iteratively, each operation incurs host boundary
-/// crossing overheads. Developers should accumulate items in a local `Vec<u8>`
+/// When `push_back` is called iteratively inside an unconstrained or sufficiently
+/// large loop, each operation incurs host boundary crossing overheads and memory
+/// reallocations. Developers should accumulate items in a local `Vec<u8>`
 /// first and perform a single conversion via `Bytes::from_slice` afterwards.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
@@ -59,9 +56,6 @@ fn bad_push_back(mut b: Bytes) {
 
 /// Negative test case: small, provably bounded loops or explicitly suppressed
 /// blocks are ignored or bypassed when marked with the appropriate attributes.
-///
-/// # Exception Rationale
-/// or annotated to bypass the lint when performance overhead is negligible.
 ///
 /// # Exception Rationale
 /// For tiny fixed iterations where overhead is minimal or for test mocking contexts,
