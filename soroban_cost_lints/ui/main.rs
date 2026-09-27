@@ -1,17 +1,50 @@
-// Note: at this point three of the lints referenced in
-// `#[allow(...)]` markers below (`expensive_crypto_in_loop`,
-// `redundant_storage_read`,
-// `unnecessary_vec_allocation`) are not yet implemented — they exist as
-// community-proposed follow-ups tracked in GitHub issues #59/#60/#61/#62.
-// The unknown-lint allow forward-suppresses rustc warnings on those markers
-// so we can land the fixtures today; once each lint lands, the corresponding
-// `#[allow(<name>)]` becomes a real suppression with no edit needed.
-#![allow(unknown_lints)]
+//! # Soroban Cost Lints Test Fixtures
+//!
+//! This file serves as the UI test fixture module for `soroban_cost_lints`. It contains
+//! mock implementations of `soroban_sdk` types and functions, alongside various
+//! positive and negative test cases (fixtures) designed to trigger or avoid specific
+//! lints during static analysis checks.
+//!
+//! ## Structure
+//! - `pub mod soroban_sdk`: Minimal mocks for SDK structures (`Env`, `Address`, `Storage`, etc.).
+//! - Fixture functions: Organized by lint category (e.g., storage in loops, redundant clones).
 
+/// Tests contract invocation inside an infinite loop with a break statement.
+/// This function demonstrates how cross-contract calls inside loop bodies are flagged
+/// by the `contract_call_in_loop` static analysis lint rule to prevent unnecessary VM instantiation overhead.
+/// This should trigger the `contract_call_in_loop` lint.
+fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    loop {
+        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
+        break;
+    }
+}
+
+/// Tests a single contract invocation outside of any loop.
+/// This is a performant pattern where the contract invocation occurs in linear code,
+/// avoiding repeated dispatch overhead, and should not trigger any cost lints.
+/// This is a good pattern and should not trigger lints.
+fn good_invoke_contract_outside_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good — single call, not in a loop
+}
+
+#[allow(contract_call_in_loop)]
+/// Tests a contract invocation inside a bounded loop with an explicit `#[allow]` attribute.
+/// This fixture ensures that developers can opt out of the `contract_call_in_loop` lint
+/// when a bounded iteration is intentional and economically justified.
+#[allow(contract_call_in_loop)]
+fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    for _ in 0..10 {
+        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed via attribute)
+    }
+}
+#[allow(unknown_lints)]
 pub mod soroban_sdk {
     pub struct Env;
     impl Clone for Env {
-        fn clone(&self) -> Self { Env }
+        fn clone(&self) -> Self {
+            Env
+        }
     }
     impl Env {
         pub fn storage(&self) -> storage::Storage {
@@ -55,38 +88,58 @@ pub mod soroban_sdk {
     pub mod storage {
         pub struct Storage;
         impl Storage {
-            pub fn instance(&self) -> Instance { Instance }
-            pub fn persistent(&self) -> Persistent { Persistent }
-            pub fn temporary(&self) -> Temporary { Temporary }
+            pub fn instance(&self) -> Instance {
+                Instance
+            }
+            pub fn persistent(&self) -> Persistent {
+                Persistent
+            }
+            pub fn temporary(&self) -> Temporary {
+                Temporary
+            }
         }
 
         pub struct Instance;
         impl Instance {
-            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> { None }
+            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> {
+                None
+            }
             pub fn set<K: ?Sized, V>(&self, _k: &K, _v: &V) {}
-            pub fn has<K: ?Sized>(&self, _k: &K) -> bool { false }
+            pub fn has<K: ?Sized>(&self, _k: &K) -> bool {
+                false
+            }
         }
 
         pub struct Persistent;
         impl Persistent {
-            pub fn get<K, V>(&self, _k: &K) -> Option<V> { None }
+            pub fn get<K, V>(&self, _k: &K) -> Option<V> {
+                None
+            }
             pub fn set<K, V>(&self, _k: &K, _v: &V) {}
-            pub fn has<K>(&self, _k: &K) -> bool { false }
+            pub fn has<K>(&self, _k: &K) -> bool {
+                false
+            }
             pub fn extend_ttl<K>(&self, _k: &K, _threshold: &()) {}
         }
 
         pub struct Temporary;
         impl Temporary {
-            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> { None }
+            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> {
+                None
+            }
             pub fn set<K: ?Sized, V>(&self, _k: &K, _v: &V) {}
-            pub fn has<K: ?Sized>(&self, _k: &K) -> bool { false }
+            pub fn has<K: ?Sized>(&self, _k: &K) -> bool {
+                false
+            }
         }
     }
 
     pub mod ledger {
         pub struct Ledger;
         impl Ledger {
-            pub fn sequence(&self) -> u32 { 0 }
+            pub fn sequence(&self) -> u32 {
+                0
+            }
         }
     }
 
@@ -95,8 +148,12 @@ pub mod soroban_sdk {
     pub mod crypto {
         pub struct Crypto;
         impl Crypto {
-            pub fn sha256(&self, _data: &[u8]) -> [u8; 32] { [0; 32] }
-            pub fn keccak256(&self, _data: &[u8]) -> [u8; 32] { [0; 32] }
+            pub fn sha256(&self, _data: &[u8]) -> [u8; 32] {
+                [0; 32]
+            }
+            pub fn keccak256(&self, _data: &[u8]) -> [u8; 32] {
+                [0; 32]
+            }
             pub fn ed25519_verify(&self, _key: &[u8], _msg: &[u8], _sig: &[u8]) {}
         }
     }
@@ -104,7 +161,9 @@ pub mod soroban_sdk {
     pub mod prng {
         pub struct Prng;
         impl Prng {
-            pub fn u64_in_range(&self, _low: u64, _high: u64) -> u64 { 0 }
+            pub fn u64_in_range(&self, _low: u64, _high: u64) -> u64 {
+                0
+            }
         }
     }
 
@@ -118,8 +177,12 @@ pub mod soroban_sdk {
     pub mod deploy {
         pub struct Deployer;
         impl Deployer {
-            pub fn with_current_contract(&self, _salt: [u8; 32]) -> Deployer { Deployer }
-            pub fn uploaded_wasm_hash(&self) -> [u8; 32] { [0; 32] }
+            pub fn with_current_contract(&self, _salt: [u8; 32]) -> Deployer {
+                Deployer
+            }
+            pub fn uploaded_wasm_hash(&self) -> [u8; 32] {
+                [0; 32]
+            }
         }
     }
 
@@ -138,20 +201,28 @@ pub mod soroban_sdk {
     // two separate `Bytes` definitions here, which stopped this file compiling.
     pub struct Bytes(pub std::vec::Vec<u8>);
     impl Bytes {
-        pub fn from(_s: &str) -> Bytes { Bytes(vec![]) }
+        pub fn from(_s: &str) -> Bytes {
+            Bytes(vec![])
+        }
         pub fn append(&mut self, _other: &Bytes) {}
         pub fn push_back(&mut self, _val: u8) {}
     }
     impl std::ops::Add for Bytes {
         type Output = Bytes;
-        fn add(self, _rhs: Bytes) -> Bytes { Bytes(vec![]) }
+        fn add(self, _rhs: Bytes) -> Bytes {
+            Bytes(vec![])
+        }
     }
 
     // Upstream's unit-struct Vec supports `push_back(i32)` for bytes_append_in_loop.
     pub struct Vec;
     impl Vec {
-        pub fn new() -> Vec { Vec }
-        pub fn with_capacity(_n: u32) -> Vec { Vec }
+        pub fn new() -> Vec {
+            Vec
+        }
+        pub fn with_capacity(_n: u32) -> Vec {
+            Vec
+        }
         pub fn push_back(&mut self, _v: i32) {}
         pub fn reserve(&mut self, _additional: u32) {}
     }
@@ -160,28 +231,42 @@ pub mod soroban_sdk {
     pub struct Map;
     impl Map {
         pub fn insert<K, V>(&mut self, _k: K, _v: V) {}
-        pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> { None }
+        pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> {
+            None
+        }
     }
 
     pub struct Symbol;
     impl Symbol {
-        pub fn new(_env: &Env, _s: &str) -> Symbol { Symbol }
+        pub fn new(_env: &Env, _s: &str) -> Symbol {
+            Symbol
+        }
     }
 
     pub mod vec {
         pub struct Vec<T>(std::marker::PhantomData<T>);
         impl<T> Vec<T> {
-            pub fn contains(&self, _item: &T) -> bool { false }
-            pub fn position(&self, _f: impl FnMut(&T) -> bool) -> Option<usize> { None }
-            pub fn find(&self, _f: impl FnMut(&T) -> bool) -> Option<&T> { None }
+            pub fn contains(&self, _item: &T) -> bool {
+                false
+            }
+            pub fn position(&self, _f: impl FnMut(&T) -> bool) -> Option<usize> {
+                None
+            }
+            pub fn find(&self, _f: impl FnMut(&T) -> bool) -> Option<&T> {
+                None
+            }
         }
     }
 
     pub mod map {
         pub struct Map<K, V>(std::marker::PhantomData<(K, V)>);
         impl<K, V> Map<K, V> {
-            pub fn contains_key(&self, _k: &K) -> bool { false }
-            pub fn get(&self, _k: &K) -> Option<&V> { None }
+            pub fn contains_key(&self, _k: &K) -> bool {
+                false
+            }
+            pub fn get(&self, _k: &K) -> Option<&V> {
+                None
+            }
         }
     }
 }
@@ -193,10 +278,22 @@ use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
 // receiver is an ADT whose def-path does NOT match any known soroban_sdk type.
 struct TokenClient(Env);
 impl TokenClient {
-    pub fn transfer(&self, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
-    pub fn transfer_from(&self, _spender: &soroban_sdk::Address, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
+    pub fn transfer(
+        &self,
+        _from: &soroban_sdk::Address,
+        _to: &soroban_sdk::Address,
+        _amount: &i128,
+    ) {
+    }
+    pub fn transfer_from(
+        &self,
+        _spender: &soroban_sdk::Address,
+        _from: &soroban_sdk::Address,
+        _to: &soroban_sdk::Address,
+        _amount: &i128,
+    ) {
+    }
 }
-
 
 // Realistic false-positive scenario: batch-writing different keys per iteration
 #[allow(soroban_storage_in_loop)]
@@ -210,10 +307,14 @@ fn batch_write_different_keys(env: Env, pairs: &[(u32, u32)]) {
 // soroban_storage_in_loop — Inter-procedural Fixtures
 // =======================================================================
 
+/// Helper function that performs an instance storage write operation.
+/// Used to test inter-procedural storage lints.
 fn persist(env: &Env) {
     env.storage().instance().set(&"key", &42);
 }
 
+/// Helper function that performs no costly operations.
+/// Used as a control case for inter-procedural call lints.
 fn noop(_env: &Env) {
     // nothing
 }
@@ -261,7 +362,8 @@ fn bad_storage_in_while_loop(env: Env) {
 
 fn bad_storage_in_loop_loop(env: Env) {
     loop {
-        if env.storage().temporary().has(&1) { // Should Warn
+        if env.storage().temporary().has(&1) {
+            // Should Warn
             break;
         }
     }
@@ -278,8 +380,6 @@ fn allowed_storage_in_loop(env: Env) {
     }
 }
 
-// Realistic false-positive scenario: batch-writing different keys per iteration
-#[allow(soroban_storage_in_loop)]
 // =======================================================================
 // redundant_env_clone — Fixtures
 // =======================================================================
@@ -611,7 +711,7 @@ fn good_transfer_from_outside_loop(env: Env) {
     client.transfer_from(&spender, &from, &to, &50); // Good — outside loop
 }
 
-#[allow(token_transfer_in_loop)]
+#[allow(soroban_storage_in_loop)]
 fn allowed_transfer_in_loop(env: Env) {
     let client = TokenClient(env.clone());
     let from = soroban_sdk::Address;
@@ -680,23 +780,6 @@ fn good_small_capacity() {
 fn good_runtime_capacity(n: u32) {
     let _v = Vec::with_capacity(n); // runtime value, ignored
 }
-fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    loop {
-        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
-        break;
-    }
-}
-
-fn good_invoke_contract_outside_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good — single call, not in a loop
-}
-
-#[allow(contract_call_in_loop)]
-fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    for _ in 0..10 {
-        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed)
-    }
-}
 
 // =======================================================================
 // unnecessary_string_to_bytes — Fixtures
@@ -728,7 +811,6 @@ fn good_temporary_read(env: Env) {
 fn allowed_persistent_read(env: Env) {
     let _val: Option<i32> = env.storage().persistent().get(&1); // Good (allowed)
 }
-
 
 // =======================================================================
 // soroban_redundant_storage_read — Fixtures

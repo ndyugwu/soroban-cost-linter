@@ -72,7 +72,7 @@ jobs:
   build-and-test:
     needs: [test, coverage, benchmark]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check matrix result
         run: |
@@ -91,7 +91,7 @@ jobs:
 
   coverage:
     name: Coverage Report
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - name: Validate toolchain pins (Linux)
@@ -127,7 +127,7 @@ jobs:
 
   benchmark:
     name: Performance Benchmark Gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - name: Validate toolchain pins (Linux)
