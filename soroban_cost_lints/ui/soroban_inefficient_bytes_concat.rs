@@ -36,6 +36,11 @@ use soroban_sdk::Bytes;
 /// Positive test case: performing repeated `push_back` operations inside an
 /// unconstrained or sufficiently large loop triggers a warning because it
 /// leads to quadratic memory reallocations and excessive memory metering costs.
+///
+/// # Detailed Analysis
+/// When `push_back` is called iteratively, each operation incurs host boundary
+/// crossing overheads. Developers should accumulate items in a local `Vec<u8>`
+/// first and perform a single conversion via `Bytes::from_slice` afterwards.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
@@ -44,6 +49,10 @@ fn bad_push_back(mut b: Bytes) {
 
 /// Negative test case: small, provably bounded loops are explicitly allowed
 /// or annotated to bypass the lint when performance overhead is negligible.
+///
+/// # Exception Rationale
+/// For tiny fixed iterations where overhead is minimal or for test mocking contexts,
+/// the lint can be explicitly silenced using the `#[allow(...)]` attribute.
 #[allow(soroban_inefficient_bytes_concat)]
 fn good_small_push_back(mut b: Bytes) {
     // False positive: loop is small and provably bounded, so cost is negligible,
