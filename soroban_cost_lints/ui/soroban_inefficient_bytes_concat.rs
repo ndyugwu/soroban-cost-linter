@@ -20,7 +20,7 @@ use soroban_sdk::Bytes;
 /// This function triggers the `soroban_inefficient_bytes_concat` lint warning.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
-        b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
+        b.push_back(1); //~ WARNING: soroban_inefficient_bytes_concat
     }
 }
 
