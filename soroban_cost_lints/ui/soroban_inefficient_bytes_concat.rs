@@ -1,5 +1,11 @@
 /// UI test fixture for `soroban_inefficient_bytes_concat`.
 ///
+/// This module verifies that the `soroban_inefficient_bytes_concat` lint properly
+/// identifies inefficient `.push_back()` and `.append()` operations performed on
+/// Soroban `Bytes` containers within loop structures (`for`, `while`, `loop`).
+/// It ensures that developers are warned about excessive host boundary crossings
+/// and guided toward efficient Rust-native memory accumulation (`Vec<u8>`).
+///
 /// # What it does
 /// Detects Bytes concatenation operations (`push_back` and `append`) that are
 /// executed inside loop bodies (`for`, `while`, or `loop`).
@@ -33,7 +39,11 @@ pub mod soroban_sdk {
 }
 use soroban_sdk::Bytes;
 
-/// Positive test case: performing repeated `push_back` operations inside an
+/// Positive test case: performing repeated `push_back` operations inside a
+/// `for` loop triggers the `soroban_inefficient_bytes_concat` warning because
+/// each call crosses the host boundary and inflates gas/CPU fees unnecessarily.
+///
+/// # Detailed Analysis
 /// unconstrained or sufficiently large loop triggers a warning because it
 /// leads to quadratic memory reallocations and excessive memory metering costs.
 ///
@@ -47,7 +57,10 @@ fn bad_push_back(mut b: Bytes) {
     }
 }
 
-/// Negative test case: small, provably bounded loops are explicitly allowed
+/// Negative test case: small, provably bounded loops or explicitly suppressed
+/// blocks are ignored or bypassed when marked with the appropriate attributes.
+///
+/// # Exception Rationale
 /// or annotated to bypass the lint when performance overhead is negligible.
 ///
 /// # Exception Rationale
