@@ -1,7 +1,6 @@
-//! # Soroban Cost Lints Test Fixtures and Integration Mocks
+//! # Soroban Cost Lints Test Fixtures
 //!
-//!
-//! This comprehensive source file serves as the primary UI test fixture module for `soroban_cost_lints`. It contains
+//! This file serves as the UI test fixture module for `soroban_cost_lints`. It contains
 //! mock implementations of `soroban_sdk` types and functions, alongside various
 //! positive and negative test cases (fixtures) designed to trigger or avoid specific
 //! lints during static analysis checks.
@@ -10,6 +9,28 @@
 //! - `pub mod soroban_sdk`: Minimal mocks for SDK structures (`Env`, `Address`, `Storage`, etc.).
 //! - Fixture functions: Organized by lint category (e.g., storage in loops, redundant clones).
 
+
+/// Tests contract invocation inside an infinite loop with a break statement.
+/// This should trigger the `contract_call_in_loop` lint.
+fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    loop {
+        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
+        break;
+    }
+}
+
+/// Tests a single contract invocation outside of any loop.
+/// This is a good pattern and should not trigger lints.
+fn good_invoke_contract_outside_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good — single call, not in a loop
+}
+
+#[allow(contract_call_in_loop)]
+fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    for _ in 0..10 {
+        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed)
+    }
+}
 #![allow(unknown_lints)]
 pub mod soroban_sdk {
     pub struct Env;
@@ -279,10 +300,14 @@ fn batch_write_different_keys(env: Env, pairs: &[(u32, u32)]) {
 // soroban_storage_in_loop — Inter-procedural Fixtures
 // =======================================================================
 
+/// Helper function that performs an instance storage write operation.
+/// Used to test inter-procedural storage lints.
 fn persist(env: &Env) {
     env.storage().instance().set(&"key", &42);
 }
 
+/// Helper function that performs no costly operations.
+/// Used as a control case for inter-procedural call lints.
 fn noop(_env: &Env) {
     // nothing
 }
@@ -348,8 +373,6 @@ fn allowed_storage_in_loop(env: Env) {
     }
 }
 
-// Realistic false-positive scenario: batch-writing different keys per iteration
-#[allow(soroban_storage_in_loop)]
 // =======================================================================
 // redundant_env_clone — Fixtures
 // =======================================================================
@@ -749,23 +772,6 @@ fn good_small_capacity() {
 // Good — runtime-derived capacity, no warning
 fn good_runtime_capacity(n: u32) {
     let _v = Vec::with_capacity(n); // runtime value, ignored
-}
-fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    loop {
-        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
-        break;
-    }
-}
-
-fn good_invoke_contract_outside_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good — single call, not in a loop
-}
-
-#[allow(contract_call_in_loop)]
-fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    for _ in 0..10 {
-        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed)
-    }
 }
 
 // =======================================================================
