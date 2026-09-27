@@ -9,7 +9,6 @@
 //! - `pub mod soroban_sdk`: Minimal mocks for SDK structures (`Env`, `Address`, `Storage`, etc.).
 //! - Fixture functions: Organized by lint category (e.g., storage in loops, redundant clones).
 
-
 /// Tests contract invocation inside an infinite loop with a break statement.
 /// This should trigger the `contract_call_in_loop` lint.
 fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
@@ -31,7 +30,7 @@ fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: S
         let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed)
     }
 }
-#![allow(unknown_lints)]
+#[allow(unknown_lints)]
 pub mod soroban_sdk {
     pub struct Env;
     impl Clone for Env {
@@ -704,7 +703,7 @@ fn good_transfer_from_outside_loop(env: Env) {
     client.transfer_from(&spender, &from, &to, &50); // Good — outside loop
 }
 
-#[allow(token_transfer_in_loop)]
+#[allow(soroban_storage_in_loop)]
 fn allowed_transfer_in_loop(env: Env) {
     let client = TokenClient(env.clone());
     let from = soroban_sdk::Address;
