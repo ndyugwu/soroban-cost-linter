@@ -1,5 +1,5 @@
-//! UI test fixture for `soroban_inefficient_bytes_concat`.
-//!
+/// UI test fixture for `soroban_inefficient_bytes_concat`.
+///
 //! This fixture verifies that the static analysis linter correctly detects
 //! inefficient byte concatenations or element pushes (such as `.push_back()`
 //! or `.append()`) occurring inside loops on Soroban `Bytes` objects, while
@@ -31,10 +31,6 @@ fn bad_push_back(mut b: Bytes) {
 
 /// Negative test case: small, provably bounded loops are explicitly allowed
 /// or annotated to bypass the lint when performance overhead is negligible.
-/// This function demonstrates how `#[allow(...)]` suppresses the lint.
-///
-/// # Arguments
-/// * `mut b` - The Soroban `Bytes` instance being appended to within a tightly bounded loop.
 #[allow(soroban_inefficient_bytes_concat)]
 fn good_small_push_back(mut b: Bytes) {
     // False positive: loop is small and provably bounded, so cost is negligible,
@@ -44,4 +40,5 @@ fn good_small_push_back(mut b: Bytes) {
     }
 }
 
+// Main entry point for the inefficient bytes concat UI test
 fn main() {}
