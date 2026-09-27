@@ -10,6 +10,8 @@
 //! - Fixture functions: Organized by lint category (e.g., storage in loops, redundant clones).
 
 /// Tests contract invocation inside an infinite loop with a break statement.
+/// This function demonstrates how cross-contract calls inside loop bodies are flagged
+/// by the `contract_call_in_loop` static analysis lint rule to prevent unnecessary VM instantiation overhead.
 /// This should trigger the `contract_call_in_loop` lint.
 fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
     loop {
@@ -19,15 +21,21 @@ fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: 
 }
 
 /// Tests a single contract invocation outside of any loop.
+/// This is a performant pattern where the contract invocation occurs in linear code,
+/// avoiding repeated dispatch overhead, and should not trigger any cost lints.
 /// This is a good pattern and should not trigger lints.
 fn good_invoke_contract_outside_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
     let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good — single call, not in a loop
 }
 
 #[allow(contract_call_in_loop)]
+/// Tests a contract invocation inside a bounded loop with an explicit `#[allow]` attribute.
+/// This fixture ensures that developers can opt out of the `contract_call_in_loop` lint
+/// when a bounded iteration is intentional and economically justified.
+#[allow(contract_call_in_loop)]
 fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
     for _ in 0..10 {
-        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed)
+        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed via attribute)
     }
 }
 #[allow(unknown_lints)]
