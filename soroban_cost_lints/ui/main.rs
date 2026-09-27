@@ -1,6 +1,7 @@
-//! # Soroban Cost Lints Test Fixtures
+//! # Soroban Cost Lints Test Fixtures and Integration Mocks
 //!
-//! This file serves as the UI test fixture module for `soroban_cost_lints`. It contains
+//!
+//! This comprehensive source file serves as the primary UI test fixture module for `soroban_cost_lints`. It contains
 //! mock implementations of `soroban_sdk` types and functions, alongside various
 //! positive and negative test cases (fixtures) designed to trigger or avoid specific
 //! lints during static analysis checks.
@@ -9,24 +10,6 @@
 //! - `pub mod soroban_sdk`: Minimal mocks for SDK structures (`Env`, `Address`, `Storage`, etc.).
 //! - Fixture functions: Organized by lint category (e.g., storage in loops, redundant clones).
 
-
-fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    loop {
-        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
-        break;
-    }
-}
-
-fn good_invoke_contract_outside_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good — single call, not in a loop
-}
-
-#[allow(contract_call_in_loop)]
-fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
-    for _ in 0..10 {
-        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed)
-    }
-}
 #![allow(unknown_lints)]
 pub mod soroban_sdk {
     pub struct Env;
@@ -365,6 +348,8 @@ fn allowed_storage_in_loop(env: Env) {
     }
 }
 
+// Realistic false-positive scenario: batch-writing different keys per iteration
+#[allow(soroban_storage_in_loop)]
 // =======================================================================
 // redundant_env_clone — Fixtures
 // =======================================================================
@@ -764,6 +749,23 @@ fn good_small_capacity() {
 // Good — runtime-derived capacity, no warning
 fn good_runtime_capacity(n: u32) {
     let _v = Vec::with_capacity(n); // runtime value, ignored
+}
+fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    loop {
+        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
+        break;
+    }
+}
+
+fn good_invoke_contract_outside_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good — single call, not in a loop
+}
+
+#[allow(contract_call_in_loop)]
+fn allowed_invoke_contract_in_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
+    for _ in 0..10 {
+        let _result: i32 = env.invoke_contract(&addr, &func, ()); // Good (allowed)
+    }
 }
 
 // =======================================================================
