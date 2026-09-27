@@ -1,5 +1,18 @@
 /// UI test fixture for `soroban_inefficient_bytes_concat`.
 ///
+/// # What it does
+/// Detects Bytes concatenation operations (`push_back` and `append`) that are
+/// executed inside loop bodies (`for`, `while`, or `loop`).
+///
+/// # Why is this bad?
+/// Every `push_back` and `append` call on Soroban `Bytes` crosses the host boundary.
+/// Placing these operations inside a loop results in repeated host function calls,
+/// drastically increasing CPU instruction costs and transaction fees.
+///
+/// # Suggested Fix
+/// Accumulate bytes in a Rust `Vec<u8>` during the loop, then convert to `Bytes`
+/// once outside the loop via `Bytes::from_slice`.
+///
 //! This fixture verifies that the static analysis linter correctly detects
 //! inefficient byte concatenations or element pushes (such as `.push_back()`
 //! or `.append()`) occurring inside loops on Soroban `Bytes` objects, while
