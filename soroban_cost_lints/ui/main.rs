@@ -15,11 +15,12 @@ use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
 // This particular file (`main.rs`) acts as an umbrella compilation unit / entry point for comprehensive integration tests
 // across the lint suite.
 
-
 pub mod soroban_sdk {
     pub struct Env;
     impl Clone for Env {
-        fn clone(&self) -> Self { Env }
+        fn clone(&self) -> Self {
+            Env
+        }
     }
     impl Env {
         pub fn storage(&self) -> storage::Storage {
@@ -63,38 +64,58 @@ pub mod soroban_sdk {
     pub mod storage {
         pub struct Storage;
         impl Storage {
-            pub fn instance(&self) -> Instance { Instance }
-            pub fn persistent(&self) -> Persistent { Persistent }
-            pub fn temporary(&self) -> Temporary { Temporary }
+            pub fn instance(&self) -> Instance {
+                Instance
+            }
+            pub fn persistent(&self) -> Persistent {
+                Persistent
+            }
+            pub fn temporary(&self) -> Temporary {
+                Temporary
+            }
         }
 
         pub struct Instance;
         impl Instance {
-            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> { None }
+            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> {
+                None
+            }
             pub fn set<K: ?Sized, V>(&self, _k: &K, _v: &V) {}
-            pub fn has<K: ?Sized>(&self, _k: &K) -> bool { false }
+            pub fn has<K: ?Sized>(&self, _k: &K) -> bool {
+                false
+            }
         }
 
         pub struct Persistent;
         impl Persistent {
-            pub fn get<K, V>(&self, _k: &K) -> Option<V> { None }
+            pub fn get<K, V>(&self, _k: &K) -> Option<V> {
+                None
+            }
             pub fn set<K, V>(&self, _k: &K, _v: &V) {}
-            pub fn has<K>(&self, _k: &K) -> bool { false }
+            pub fn has<K>(&self, _k: &K) -> bool {
+                false
+            }
             pub fn extend_ttl<K>(&self, _k: &K, _threshold: &()) {}
         }
 
         pub struct Temporary;
         impl Temporary {
-            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> { None }
+            pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> {
+                None
+            }
             pub fn set<K: ?Sized, V>(&self, _k: &K, _v: &V) {}
-            pub fn has<K: ?Sized>(&self, _k: &K) -> bool { false }
+            pub fn has<K: ?Sized>(&self, _k: &K) -> bool {
+                false
+            }
         }
     }
 
     pub mod ledger {
         pub struct Ledger;
         impl Ledger {
-            pub fn sequence(&self) -> u32 { 0 }
+            pub fn sequence(&self) -> u32 {
+                0
+            }
         }
     }
 
@@ -103,8 +124,12 @@ pub mod soroban_sdk {
     pub mod crypto {
         pub struct Crypto;
         impl Crypto {
-            pub fn sha256(&self, _data: &[u8]) -> [u8; 32] { [0; 32] }
-            pub fn keccak256(&self, _data: &[u8]) -> [u8; 32] { [0; 32] }
+            pub fn sha256(&self, _data: &[u8]) -> [u8; 32] {
+                [0; 32]
+            }
+            pub fn keccak256(&self, _data: &[u8]) -> [u8; 32] {
+                [0; 32]
+            }
             pub fn ed25519_verify(&self, _key: &[u8], _msg: &[u8], _sig: &[u8]) {}
         }
     }
@@ -112,7 +137,9 @@ pub mod soroban_sdk {
     pub mod prng {
         pub struct Prng;
         impl Prng {
-            pub fn u64_in_range(&self, _low: u64, _high: u64) -> u64 { 0 }
+            pub fn u64_in_range(&self, _low: u64, _high: u64) -> u64 {
+                0
+            }
         }
     }
 
@@ -126,8 +153,12 @@ pub mod soroban_sdk {
     pub mod deploy {
         pub struct Deployer;
         impl Deployer {
-            pub fn with_current_contract(&self, _salt: [u8; 32]) -> Deployer { Deployer }
-            pub fn uploaded_wasm_hash(&self) -> [u8; 32] { [0; 32] }
+            pub fn with_current_contract(&self, _salt: [u8; 32]) -> Deployer {
+                Deployer
+            }
+            pub fn uploaded_wasm_hash(&self) -> [u8; 32] {
+                [0; 32]
+            }
         }
     }
 
@@ -140,56 +171,72 @@ pub mod soroban_sdk {
         }
     }
 
-    // Tuple struct so `Bytes::from(_s)` and `Bytes(buf)` (HEAD's ineffective_bytes_concat) still work.
-    // Also has `append` to support upstream's bytes_append_in_loop fixtures.
-    // One tuple struct carrying every method the fixtures need. A merge left
-    // two separate `Bytes` definitions here, which stopped this file compiling.
     pub struct Bytes(pub std::vec::Vec<u8>);
     impl Bytes {
-        pub fn from(_s: &str) -> Bytes { Bytes(vec![]) }
+        pub fn from(_s: &str) -> Bytes {
+            Bytes(vec![])
+        }
         pub fn append(&mut self, _other: &Bytes) {}
         pub fn push_back(&mut self, _val: u8) {}
     }
     impl std::ops::Add for Bytes {
         type Output = Bytes;
-        fn add(self, _rhs: Bytes) -> Bytes { Bytes(vec![]) }
+        fn add(self, _rhs: Bytes) -> Bytes {
+            Bytes(vec![])
+        }
     }
 
-    // Upstream's unit-struct Vec supports `push_back(i32)` for bytes_append_in_loop.
     pub struct Vec;
     impl Vec {
-        pub fn new() -> Vec { Vec }
-        pub fn with_capacity(_n: u32) -> Vec { Vec }
+        pub fn new() -> Vec {
+            Vec
+        }
+        pub fn with_capacity(_n: u32) -> Vec {
+            Vec
+        }
         pub fn push_back(&mut self, _v: i32) {}
         pub fn reserve(&mut self, _additional: u32) {}
     }
 
-    // HEAD's permissive Map: `insert<K, V>` is generic so map_insert_in_loop fixtures still work.
     pub struct Map;
     impl Map {
         pub fn insert<K, V>(&mut self, _k: K, _v: V) {}
-        pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> { None }
+        pub fn get<K: ?Sized, V>(&self, _k: &K) -> Option<V> {
+            None
+        }
     }
 
     pub struct Symbol;
     impl Symbol {
-        pub fn new(_env: &Env, _s: &str) -> Symbol { Symbol }
+        pub fn new(_env: &Env, _s: &str) -> Symbol {
+            Symbol
+        }
     }
 
     pub mod vec {
         pub struct Vec<T>(std::marker::PhantomData<T>);
         impl<T> Vec<T> {
-            pub fn contains(&self, _item: &T) -> bool { false }
-            pub fn position(&self, _f: impl FnMut(&T) -> bool) -> Option<usize> { None }
-            pub fn find(&self, _f: impl FnMut(&T) -> bool) -> Option<&T> { None }
+            pub fn contains(&self, _item: &T) -> bool {
+                false
+            }
+            pub fn position(&self, _f: impl FnMut(&T) -> bool) -> Option<usize> {
+                None
+            }
+            pub fn find(&self, _f: impl FnMut(&T) -> bool) -> Option<&T> {
+                None
+            }
         }
     }
 
     pub mod map {
         pub struct Map<K, V>(std::marker::PhantomData<(K, V)>);
         impl<K, V> Map<K, V> {
-            pub fn contains_key(&self, _k: &K) -> bool { false }
-            pub fn get(&self, _k: &K) -> Option<&V> { None }
+            pub fn contains_key(&self, _k: &K) -> bool {
+                false
+            }
+            pub fn get(&self, _k: &K) -> Option<&V> {
+                None
+            }
         }
     }
 }
@@ -200,8 +247,21 @@ pub mod soroban_sdk {
 struct TokenClient(Env);
 
 impl TokenClient {
-    pub fn transfer(&self, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
-    pub fn transfer_from(&self, _spender: &soroban_sdk::Address, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
+    pub fn transfer(
+        &self,
+        _from: &soroban_sdk::Address,
+        _to: &soroban_sdk::Address,
+        _amount: &i128,
+    ) {
+    }
+    pub fn transfer_from(
+        &self,
+        _spender: &soroban_sdk::Address,
+        _from: &soroban_sdk::Address,
+        _to: &soroban_sdk::Address,
+        _amount: &i128,
+    ) {
+    }
 }
 
 // Realistic false-positive scenario: batch-writing different keys per iteration
@@ -259,7 +319,8 @@ fn bad_storage_in_while_loop(env: Env) {
 
 fn bad_storage_in_loop_loop(env: Env) {
     loop {
-        if env.storage().temporary().has(&1) { // Should Warn
+        if env.storage().temporary().has(&1) {
+            // Should Warn
             break;
         }
     }
