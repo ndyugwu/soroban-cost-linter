@@ -20,7 +20,8 @@ use soroban_sdk::Bytes;
 
 /// Positive test case: repeatedly pushing back to a `Bytes` container inside a loop.
 /// This pattern incurs high memory allocation and CPU instruction costs and triggers
-/// the `soroban_inefficient_bytes_concat` lint warning.
+/// the `soroban_inefficient_bytes_concat` lint warning. Developers should instead
+/// pre-allocate or construct the buffer outside the hot loop path to minimize host fees.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
@@ -30,6 +31,7 @@ fn bad_push_back(mut b: Bytes) {
 /// Negative/Allowed test case: small, provably bounded loop using `#[allow(...)]`.
 /// False positive: the loop bounds are small and fixed, so the allocation cost is
 /// negligible, but the structural pattern would trigger the lint without explicit allow suppression.
+/// When bounds are statically guaranteed to be tiny, allow attributes prevent noisy diagnostics.
 #[allow(soroban_inefficient_bytes_concat)]
 fn good_small_push_back(mut b: Bytes) {
     // False positive: loop is small and provably bounded, so cost is negligible,
