@@ -1,5 +1,20 @@
 use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
-// # Soroban Cost Lints UI Test Harness
+
+//! # Soroban Cost Lints UI Test Harness
+//
+// This module serves as the central UI test integration harness for `soroban_cost_lints`.
+// In Dylint-based linting frameworks, UI tests compile snippet files or test suites
+// to verify that expected compiler diagnostics (lint warnings, errors, or suggestions)
+// are emitted correctly at the right source locations.
+//
+// ## How UI Tests Work
+//
+// 1. Each `.rs` file under `soroban_cost_lints/ui/` represents a test case for a specific lint or a group of lints.
+// 2. Special comment directives (such as `//~ ERROR:` or `//~ WARN:`) specify the expected diagnostic message and placement.
+// 3. The test runner compiles these files with the linter enabled and compares actual diagnostics against expectations.
+//
+// This particular file (`main.rs`) acts as an umbrella compilation unit / entry point for comprehensive integration tests
+// across the lint suite.
 //
 // This module serves as the central UI test integration harness for `soroban_cost_lints`.
 // In Dylint-based linting frameworks, UI tests compile snippet files or test suites
