@@ -7,13 +7,17 @@
 // so we can land the fixtures today; once each lint lands, the corresponding
 // `#[allow(<name>)]` becomes a real suppression with no edit needed.
 #![allow(unknown_lints)]
+use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
+
 
 pub mod soroban_sdk {
+    /// Represents the Soroban environment for contract execution.
     pub struct Env;
     impl Clone for Env {
         fn clone(&self) -> Self { Env }
     }
     impl Env {
+        /// Returns the storage accessor for managing contract data.
         pub fn storage(&self) -> storage::Storage {
             storage::Storage
         }
@@ -46,9 +50,12 @@ pub mod soroban_sdk {
         }
     }
 
+    /// Represents a Soroban contract or account address.
     pub struct Address;
     impl Address {
+        /// Asserts that the address has authorized the current invocation.
         pub fn require_auth(&self) {}
+        /// Asserts authorization for specific arguments.
         pub fn require_auth_for_args(&self, _args: &[Env]) {}
     }
 
@@ -186,17 +193,15 @@ pub mod soroban_sdk {
     }
 }
 
-use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
-
 // Stub contract client for token_transfer_in_loop fixtures.
 // Generated Soroban clients produce types like this — the key is that the
 // receiver is an ADT whose def-path does NOT match any known soroban_sdk type.
 struct TokenClient(Env);
+
 impl TokenClient {
     pub fn transfer(&self, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
     pub fn transfer_from(&self, _spender: &soroban_sdk::Address, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
 }
-
 
 // Realistic false-positive scenario: batch-writing different keys per iteration
 #[allow(soroban_storage_in_loop)]
@@ -680,6 +685,7 @@ fn good_small_capacity() {
 fn good_runtime_capacity(n: u32) {
     let _v = Vec::with_capacity(n); // runtime value, ignored
 }
+
 fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
     loop {
         let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
@@ -728,7 +734,6 @@ fn good_temporary_read(env: Env) {
 fn allowed_persistent_read(env: Env) {
     let _val: Option<i32> = env.storage().persistent().get(&1); // Good (allowed)
 }
-
 
 // =======================================================================
 // soroban_redundant_storage_read — Fixtures
@@ -779,5 +784,4 @@ fn allowed_sequential_read(env: Env, key: i32) {
     let _a: Option<i32> = env.storage().instance().get(&key);
     let _b: Option<i32> = env.storage().instance().get(&key); // Good (allowed)
 }
-
 fn main() {}
