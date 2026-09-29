@@ -52,12 +52,6 @@ fn bad_push_back(mut b: Bytes) {
 /// practice. However, because static analysis relies on structural patterns rather than
 /// evaluating exact iteration counts, this pattern would normally trigger a warning.
 ///
-/// # False Positive Suppression
-/// While the loop contains a `Bytes::push_back` method call, the loop bounds are very
-/// small and statically fixed (`0..2`), rendering the host-call overhead negligible in
-/// practice. However, because static analysis relies on structural patterns rather than
-/// evaluating exact iteration counts, this pattern would normally trigger a warning.
-///
 /// Using `#[allow(soroban_inefficient_bytes_concat)]` explicitly informs the linter
 /// that the developer has audited the hot path and determined the performance impact
 /// is acceptable for this specific micro-loop, preventing noisy diagnostics.
