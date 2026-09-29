@@ -7,6 +7,8 @@
 #![warn(soroban_inefficient_bytes_concat)]
 
 /// Mock implementation of the Soroban SDK types used for static analysis testing.
+/// This module mirrors the interface of `soroban_sdk::Bytes` to enable robust UI testing
+/// without requiring a full compiled Soroban SDK dependency in the linter test suite.
 pub mod soroban_sdk {
     pub struct Bytes;
     impl Bytes {
@@ -30,6 +32,7 @@ use soroban_sdk::Bytes;
 /// the hot loop path and construct the final Soroban `Bytes` object exactly once
 /// after the loop via `Bytes::from_slice` to minimize host invocation fees.
 fn bad_push_back(mut b: Bytes) {
+    // Iterating and pushing elements one by one inside a loop incurs heavy host invocation overhead.
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
     }
