@@ -12,6 +12,12 @@
 //! This lint detects such performance anti-patterns and guides developers toward
 //! efficient alternatives, such as accumulating data in a local Rust `Vec<u8>`
 //! and converting it once outside the loop via `Bytes::from_slice`.
+//!
+//! ## Detailed Explanation of Cost Impact
+//! Each method invocation on host-backed objects like `Bytes` requires crossing the Wasm-to-host
+//! boundary, paying fixed invocation overhead plus serialized argument and return transfer costs.
+//! When placed inside an unrolled or unbounded loop, these repeated boundaries compound linearly,
+//! risking transaction fee exhaustion and resource budget failures.
 
 /// Demonstrates an inefficient bytes concatenation helper and mock module setup
 /// providing minimal definitions of `soroban_sdk::Env` and `soroban_sdk::Bytes`
@@ -19,11 +25,12 @@
 ///
 /// # Panics
 /// Does not panic; purely structured for lint verification.
+/// Constructing or concatenating bytes in a suboptimal way outside or inside test setup.
+/// This helper acts as a reference fixture for mock verification.
 fn inefficient_concat() {
-    // Constructing or concatenating bytes in a suboptimal way
     let mut b = soroban_sdk::Bytes::new(&soroban_sdk::Env::default());
-    b.push(1);
-    b.push(2);
+    b.push_back(1);
+    b.push_back(2);
 }
 pub mod soroban_sdk {
     pub struct Env;
