@@ -1,5 +1,10 @@
 #![warn(soroban_inefficient_bytes_concat)]
 
+//! UI test file for the `soroban_inefficient_bytes_concat` lint.
+//! This file provides sample code illustrating both inefficient patterns
+//! that trigger warnings and bounded small loops that are allowed.
+
+/// Mock module simulating the soroban_sdk types used for testing the bytes concatenation linter ui.
 pub mod soroban_sdk {
     pub struct Bytes;
     impl Bytes {
@@ -9,6 +14,8 @@ pub mod soroban_sdk {
 }
 use soroban_sdk::Bytes;
 
+/// Demonstrates an inefficient bytes push back operation inside a loop that exceeds
+/// the threshold, triggering the `soroban_inefficient_bytes_concat` lint warning.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
