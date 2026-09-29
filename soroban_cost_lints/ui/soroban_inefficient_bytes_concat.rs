@@ -1,31 +1,53 @@
+//! UI test fixture for the `soroban_inefficient_bytes_concat` lint.
+//!
+//! This module tests both positive cases (triggering warnings when `Bytes` methods
+//! like `push_back` are invoked repeatedly inside loops) and negative/allowed
+//! cases (such as small, bounded loops where the performance impact is negligible).
+
 #![warn(soroban_inefficient_bytes_concat)]
 
-//! UI test file for the `soroban_inefficient_bytes_concat` lint.
-//! This file provides sample code illustrating both inefficient patterns
-//! that trigger warnings and bounded small loops that are allowed.
-
-/// Mock module simulating the soroban_sdk types used for testing the bytes concatenation linter ui.
+/// Mock implementation of the Soroban SDK types used for static analysis testing.
 pub mod soroban_sdk {
     pub struct Bytes;
     impl Bytes {
+        /// Appends a single 32-bit integer to the end of the `Bytes` container.
         pub fn push_back(&mut self, _val: u32) {}
+        /// Appends another `Bytes` container to this one.
         pub fn append(&mut self, _other: &Bytes) {}
     }
 }
 use soroban_sdk::Bytes;
 
-/// Demonstrates an inefficient bytes push back operation inside a loop that exceeds
-/// the threshold, triggering the `soroban_inefficient_bytes_concat` lint warning.
+/// Positive test case: repeatedly pushing back to a `Bytes` container inside a loop.
+///
+/// This pattern incurs high memory allocation and CPU instruction costs because each
+/// `push_back` crosses the host-guest boundary and forces a new allocation/copy inside
+/// the Soroban host environment. It triggers the `soroban_inefficient_bytes_concat`
+/// lint warning.
+///
+/// # Recommendation
+/// Developers should accumulate bytes in a local Rust `Vec<u8>` or buffer outside
+/// the hot loop path and construct the final Soroban `Bytes` object exactly once
+/// after the loop via `Bytes::from_slice` to minimize host invocation fees.
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
         b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
     }
 }
 
+/// Negative/Allowed test case: small, provably bounded loop using `#[allow(...)]`.
+///
+/// # False Positive Suppression
+/// While the loop contains a `Bytes::push_back` method call, the loop bounds are very
+/// small and statically fixed (`0..2`), rendering the host-call overhead negligible in
+/// practice. However, because static analysis relies on structural patterns rather than
+/// evaluating exact iteration counts, this pattern would normally trigger a warning.
+///
+/// Using `#[allow(soroban_inefficient_bytes_concat)]` explicitly informs the linter
+/// that the developer has audited the hot path and determined the performance impact
+/// is acceptable for this specific micro-loop, preventing noisy diagnostics.
 #[allow(soroban_inefficient_bytes_concat)]
 fn good_small_push_back(mut b: Bytes) {
-    // False positive: loop is small and provably bounded, so cost is negligible,
-    // but lint flags it anyway unless allowed.
     for _ in 0..2 {
         b.push_back(1);
     }
