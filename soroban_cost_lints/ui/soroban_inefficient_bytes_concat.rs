@@ -22,6 +22,12 @@ use soroban_sdk::Bytes;
 
 /// Positive test case: repeatedly pushing back to a `Bytes` container inside a loop.
 ///
+/// # Detailed Mechanics
+/// When `push_back` or `append` is called inside a hot loop, each iteration triggers
+/// a separate guest-to-host transition. The Soroban VM must allocate memory or copy bytes
+/// inside the host environment repeatedly, leading to quadratic or highly linear instruction
+/// overhead that quickly exhausts transaction CPU and memory budgets.
+///
 /// This pattern incurs high memory allocation and CPU instruction costs because each
 /// `push_back` crosses the host-guest boundary and forces a new allocation/copy inside
 /// the Soroban host environment. It triggers the `soroban_inefficient_bytes_concat`
@@ -39,6 +45,12 @@ fn bad_push_back(mut b: Bytes) {
 }
 
 /// Negative/Allowed test case: small, provably bounded loop using `#[allow(...)]`.
+///
+/// # Suppression Rationale
+/// While the loop contains a `Bytes::push_back` method call, the loop bounds are very
+/// small and statically fixed (`0..2`), rendering the host-call overhead negligible in
+/// practice. However, because static analysis relies on structural patterns rather than
+/// evaluating exact iteration counts, this pattern would normally trigger a warning.
 ///
 /// # False Positive Suppression
 /// While the loop contains a `Bytes::push_back` method call, the loop bounds are very
