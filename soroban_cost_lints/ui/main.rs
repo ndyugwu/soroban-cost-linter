@@ -162,6 +162,7 @@ pub mod soroban_sdk {
         }
     }
 
+    /// Host module mock for UI test harness.
     pub mod host {
         pub struct Host;
         impl Host {
