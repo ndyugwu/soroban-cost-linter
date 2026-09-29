@@ -1,12 +1,20 @@
-// Note: at this point three of the lints referenced in
-// `#[allow(...)]` markers below (`expensive_crypto_in_loop`,
-// `redundant_storage_read`,
-// `unnecessary_vec_allocation`) are not yet implemented — they exist as
-// community-proposed follow-ups tracked in GitHub issues #59/#60/#61/#62.
-// The unknown-lint allow forward-suppresses rustc warnings on those markers
-// so we can land the fixtures today; once each lint lands, the corresponding
-// `#[allow(<name>)]` becomes a real suppression with no edit needed.
-#![allow(unknown_lints)]
+use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
+// # Soroban Cost Lints UI Test Harness
+//
+// This module serves as the central UI test integration harness for `soroban_cost_lints`.
+// In Dylint-based linting frameworks, UI tests compile snippet files or test suites
+// to verify that expected compiler diagnostics (lint warnings, errors, or suggestions)
+// are emitted correctly at the right source locations.
+//
+// ## How UI Tests Work
+//
+// 1. Each `.rs` file under `soroban_cost_lints/ui/` represents a test case for a specific lint or a group of lints.
+// 2. Special comment directives (such as `//~ ERROR:` or `//~ WARN:`) specify the expected diagnostic message and placement.
+// 3. The test runner compiles these files with the linter enabled and compares actual diagnostics against expectations.
+//
+// This particular file (`main.rs`) acts as an umbrella compilation unit / entry point for comprehensive integration tests
+// across the lint suite.
+
 
 pub mod soroban_sdk {
     pub struct Env;
@@ -186,17 +194,15 @@ pub mod soroban_sdk {
     }
 }
 
-use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
-
 // Stub contract client for token_transfer_in_loop fixtures.
 // Generated Soroban clients produce types like this — the key is that the
 // receiver is an ADT whose def-path does NOT match any known soroban_sdk type.
 struct TokenClient(Env);
+
 impl TokenClient {
     pub fn transfer(&self, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
     pub fn transfer_from(&self, _spender: &soroban_sdk::Address, _from: &soroban_sdk::Address, _to: &soroban_sdk::Address, _amount: &i128) {}
 }
-
 
 // Realistic false-positive scenario: batch-writing different keys per iteration
 #[allow(soroban_storage_in_loop)]
@@ -680,6 +686,7 @@ fn good_small_capacity() {
 fn good_runtime_capacity(n: u32) {
     let _v = Vec::with_capacity(n); // runtime value, ignored
 }
+
 fn bad_invoke_contract_in_loop_loop(env: Env, addr: soroban_sdk::Address, func: Symbol) {
     loop {
         let _result: i32 = env.invoke_contract(&addr, &func, ()); // Should Warn
@@ -728,7 +735,6 @@ fn good_temporary_read(env: Env) {
 fn allowed_persistent_read(env: Env) {
     let _val: Option<i32> = env.storage().persistent().get(&1); // Good (allowed)
 }
-
 
 // =======================================================================
 // soroban_redundant_storage_read — Fixtures
@@ -779,5 +785,4 @@ fn allowed_sequential_read(env: Env, key: i32) {
     let _a: Option<i32> = env.storage().instance().get(&key);
     let _b: Option<i32> = env.storage().instance().get(&key); // Good (allowed)
 }
-
 fn main() {}
