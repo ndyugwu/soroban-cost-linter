@@ -14,7 +14,7 @@ use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
 //! 3. The test runner compiles these files with the linter enabled and compares actual diagnostics against expectations.
 //!
 //! This particular file (`main.rs`) acts as an umbrella compilation unit / entry point for comprehensive integration tests
-//! across the lint suite.
+//! across the lint suite. It provides mocked Soroban SDK types so that UI test files can be compiled and validated in isolation.
 
 pub mod soroban_sdk {
     pub struct Env;
