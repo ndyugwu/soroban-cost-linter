@@ -14,6 +14,8 @@
 //! This particular file (`main.rs`) acts as an umbrella compilation unit / entry point for comprehensive integration tests
 //! across the lint suite. It provides mocked Soroban SDK types so that UI test files can be compiled and validated in isolation.
 
+#![allow(unknown_lints)]
+
 pub mod soroban_sdk {
     pub struct Env;
     impl Clone for Env {
