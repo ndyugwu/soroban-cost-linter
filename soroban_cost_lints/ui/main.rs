@@ -1,5 +1,3 @@
-use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
-
 //! # Soroban Cost Lints UI Test Harness
 //!
 //! This module serves as the central UI test integration harness for `soroban_cost_lints`.
@@ -242,6 +240,8 @@ pub mod soroban_sdk {
         }
     }
 }
+
+use soroban_sdk::{Bytes, Env, Map, Symbol, Vec};
 
 // Stub contract client for token_transfer_in_loop fixtures.
 // Generated Soroban clients produce types like this — the key is that the
