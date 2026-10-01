@@ -134,7 +134,7 @@ LL |         if env.storage().temporary().has(&1) {
 warning: loop-invariant storage operation inside a loop
   --> $DIR/main.rs:326:12
    |
-LL |         if env.storage().temporary().has(&1) { // Should Warn
+LL |         if env.storage().temporary().has(&1)
    |            ^^^^^^^^^^^^^
    |
    = help: hoist this storage operation out of the loop
