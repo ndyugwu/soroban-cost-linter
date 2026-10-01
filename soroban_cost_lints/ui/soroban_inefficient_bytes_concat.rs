@@ -19,6 +19,8 @@
 //! When placed inside an unrolled or unbounded loop, these repeated boundaries compound linearly,
 //! risking transaction fee exhaustion and resource budget failures.
 
+#![warn(soroban_inefficient_bytes_concat)]
+
 /// Demonstrates an inefficient bytes concatenation helper and mock module setup
 /// providing minimal definitions of `soroban_sdk::Env` and `soroban_sdk::Bytes`
 /// so this UI test can be compiled and verified independently without the real SDK.
@@ -54,7 +56,7 @@ use soroban_sdk::Bytes;
 
 fn bad_push_back(mut b: Bytes) {
     for _ in 0..10 {
-        b.push_back(1); //~ ERROR inefficient Bytes concatenation inside a loop
+        b.push_back(1); //~ WARNING inefficient Bytes concatenation inside a loop
     }
 }
 
